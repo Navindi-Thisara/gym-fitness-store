@@ -220,7 +220,7 @@ body.dark-mode  .main-footer { background: #1a1a1a; color: #fff; }
         </form>
 
         <div class="login-link">
-            Already have an account? <a href="login.php">Login here</a>
+            Already have an account? <a href="/gym-store/auth/login.php">Login here</a>
         </div>
     </div>
 

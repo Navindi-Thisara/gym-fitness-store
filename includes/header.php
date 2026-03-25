@@ -92,15 +92,15 @@ body.dark-mode .menu-toggle { color:#fff !important; }
                 <!-- All other pages -->
                 <li><a href="<?= $root ?>index.php" class="btn-header">Home</a></li>
                 <?php if($userLogged): ?>
-                    <li><a href="<?= $root ?>auth/logout.php" class="btn-header">Logout</a></li>
+                    <li><a href="<?= $root ?>/gym-store/auth/logout.php" class="btn-header">Logout</a></li>
                 <?php else: ?>
-                    <!-- Show Login unless already on login page -->
+                    <!-- Hide Login button when already on login page -->
                     <?php if(!$isLogin): ?>
-                        <li><a href="<?= $root ?>auth/login.php" class="btn-header">Login</a></li>
+                        <li><a href="<?= $root ?>/gym-store/auth/login.php" class="btn-header">Login</a></li>
                     <?php endif; ?>
                     <!-- Hide Register button when already on register page -->
                     <?php if(!$isRegister): ?>
-                        <li><a href="<?= $root ?>auth/register.php" class="btn-header">Register</a></li>
+                        <li><a href="<?= $root ?>/gym-store/auth/register.php" class="btn-header">Register</a></li>
                     <?php endif; ?>
                 <?php endif; ?>
             <?php endif; ?>
