@@ -10,7 +10,7 @@ $password = "";
 $database = "gym_store";
 
 // Create connection
-$conn = new mysqli($host, $user, $password, $database);
+$conn = new mysqli("localhost:3307", $user, $password, $database);
 
 // Check connection
 if ($conn->connect_error) {
