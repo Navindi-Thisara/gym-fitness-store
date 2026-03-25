@@ -1,4 +1,5 @@
 <footer class="main-footer">
-    <p>&copy; <?= date('Y') ?> Gym & Fitness Store</p>
-    <div class="mode-toggle-footer" id="mode-toggle-footer">Toggle Light/Dark Mode &#9788;</div>
+    <div class="footer-content">
+        <p>&copy; <?= date('Y') ?> Gym & Fitness Store | All Rights Reserved</p>
+    </div>
 </footer>
