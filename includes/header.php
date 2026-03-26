@@ -101,7 +101,7 @@ body.dark-mode .cart-badge { background:#f0c040; color:#1a1a1a; }
                     <?php if($userLogged): ?>
                         <li><a href="<?= $root ?>/gym-store/user/home.php" class="btn-header">Home</a></li>
                     <?php else: ?>
-                        <li><a href="<?= $root ?>index.php" class="btn-header">Home</a></li>
+                        <li><a href="<?= $root ?>/gym-store/index.php" class="btn-header">Home</a></li>
                     <?php endif; ?>
                 <?php endif; ?>
                 <?php if($userLogged): ?>
