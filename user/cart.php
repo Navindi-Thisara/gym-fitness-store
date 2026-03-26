@@ -264,15 +264,16 @@ body.dark-mode .summary-row.total{color:#f0f0f0;border-color:#2a2a2a;}
     margin-top:14px; display:flex; align-items:center; justify-content:center; gap:5px;
 }
 
-/* ── Mode toggle fixed ── */
-.mode-toggle-container{position:fixed;bottom:20px;right:24px;z-index:999;}
+/* ── Mode toggle — absolute bottom-right inside wrapper, same as login page ── */
+.page-outer{ position:relative; flex:1; display:flex; flex-direction:column; }
+.mode-toggle-container{ position:absolute; bottom:16px; right:24px; z-index:10; }
 #mode-toggle{
-    font-size:18px;width:44px;height:44px;
+    font-size:18px;width:42px;height:42px;
     border-radius:50%;border:2px solid #28a745;
     background:#fff;color:#1a1a1a;cursor:pointer;
     display:flex;align-items:center;justify-content:center;
     transition:background 0.3s,color 0.3s,border-color 0.3s;
-    box-shadow:0 3px 12px rgba(0,0,0,0.2);
+    box-shadow:0 2px 8px rgba(0,0,0,0.2);
 }
 #mode-toggle:hover{background: #28a745;color: #fff;}
 body.dark-mode #mode-toggle{background: #1a1a1a;color: #28a745;border-color: #28a745;}
@@ -297,6 +298,7 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
 
 <?php include("../includes/header.php"); ?>
 
+<div class="page-outer">
 <div class="main-content">
 
     <h2 class="page-title"><i class="fa-solid fa-cart-shopping"></i> My Cart</h2>
@@ -417,14 +419,15 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
 
     <?php endif; ?>
 
-</div>
+</div><!-- end main-content -->
 
-<!-- Mode toggle fixed bottom-right -->
+<!-- Mode toggle — bottom-right corner, same as login page -->
 <div class="mode-toggle-container">
     <button id="mode-toggle" title="Toggle Light/Dark Mode">
         <i class="fa-solid fa-moon"></i>
     </button>
 </div>
+</div><!-- end page-outer -->
 
 <?php include("../includes/footer.php"); ?>
 

@@ -99,7 +99,7 @@ body.dark-mode .cart-badge { background:#f0c040; color:#1a1a1a; }
                 <!-- Hide Home button when already on home page -->
                 <?php if(!$isHome): ?>
                     <?php if($userLogged): ?>
-                        <li><a href="<?= $root ?>user/home.php" class="btn-header">Home</a></li>
+                        <li><a href="<?= $root ?>/gym-store/user/home.php" class="btn-header">Home</a></li>
                     <?php else: ?>
                         <li><a href="<?= $root ?>index.php" class="btn-header">Home</a></li>
                     <?php endif; ?>

@@ -68,7 +68,7 @@ if(isset($_POST['contact_submit'])){
 
 // ── Products — LKR prices ──
 $extra_products = [
-    ['id'=>'e1', 'name'=>'Whey Protein 2kg',     'price'=>'16500','category'=>'Supplements','badge'=>'Best Seller','icon'=>'fa-jar','image'=>'whey.jpg'],
+  ['id'=>'e1', 'name'=>'Whey Protein 2kg',     'price'=>'16500','category'=>'Supplements','badge'=>'Best Seller','icon'=>'fa-jar','image'=>'whey.jpg'],
     ['id'=>'e2', 'name'=>'Creatine Monohydrate',  'price'=>'8200', 'category'=>'Supplements','badge'=>'Popular',    'icon'=>'fa-flask','image'=>'creatine.png'],
     ['id'=>'e3', 'name'=>'Pre-Workout Powder',     'price'=>'11400','category'=>'Supplements','badge'=>'New',        'icon'=>'fa-bolt','image'=>'preworkout.png'],
     ['id'=>'e4', 'name'=>'BCAA Capsules 60s',      'price'=>'6500', 'category'=>'Supplements','badge'=>'',           'icon'=>'fa-capsules','image'=>'bcaa.jpg'],
@@ -307,19 +307,20 @@ body.dark-mode .input-group textarea:focus{border-color:#28a745;background:#2f2f
 body.dark-mode .message.error{background:#3b1f1f;border-color:#7b3535;color:#f5a5a5;}
 body.dark-mode .message.success{background:#1a3327;border-color:#2d6a4f;color:#6fcf97;}
 
-/* ── Mode toggle fixed ── */
-.mode-toggle-container{position:fixed;bottom:20px;right:24px;z-index:999;}
+/* ── Mode toggle — fixed bottom-right, visible while scrolling ── */
+.page-outer{ flex:1; display:flex; flex-direction:column; }
+.mode-toggle-container{ position:fixed; bottom:80px; right:24px; z-index:999; }
 #mode-toggle{
-    font-size:18px;width:44px;height:44px;
+    font-size:18px;width:42px;height:42px;
     border-radius:50%;border:2px solid #28a745;
     background:#fff;color:#1a1a1a;cursor:pointer;
     display:flex;align-items:center;justify-content:center;
     transition:background 0.3s,color 0.3s,border-color 0.3s;
-    box-shadow:0 3px 12px rgba(0,0,0,0.2);
+    box-shadow:0 2px 8px rgba(0,0,0,0.2);
 }
-#mode-toggle:hover{background: #28a745;color: #fff;}
-body.dark-mode #mode-toggle{background:#1a1a1a;color: #28a745;border-color: #28a745;}
-body.dark-mode #mode-toggle:hover{background: #28a745;color: #1a1a1a;}
+#mode-toggle:hover{background:#28a745;color:#fff;}
+body.dark-mode #mode-toggle{background:#1a1a1a;color:#f0c040;border-color:#f0c040;}
+body.dark-mode #mode-toggle:hover{background:#f0c040;color:#1a1a1a;}
 
 /* ── Footer ── */
 .main-footer{text-align:center;padding:12px 10px;font-size:13px;flex-shrink:0;transition:background 0.3s,color 0.3s;}
@@ -345,6 +346,7 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
 
 <?php include("../includes/header.php"); ?>
 
+<div class="page-outer">
 <div class="main-content">
 
     <!-- ── Products ── -->
@@ -476,14 +478,15 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
         </div>
     </div>
 
-</div>
+</div><!-- end main-content -->
 
-<!-- Mode toggle fixed bottom-right -->
+<!-- Mode toggle — bottom-right corner, same as login page -->
 <div class="mode-toggle-container">
     <button id="mode-toggle" title="Toggle Light/Dark Mode">
         <i class="fa-solid fa-moon"></i>
     </button>
 </div>
+</div><!-- end page-outer -->
 
 <?php include("../includes/footer.php"); ?>
 
