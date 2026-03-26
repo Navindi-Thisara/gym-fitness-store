@@ -98,7 +98,11 @@ body.dark-mode .cart-badge { background:#f0c040; color:#1a1a1a; }
             <?php else: ?>
                 <!-- Hide Home button when already on home page -->
                 <?php if(!$isHome): ?>
-                    <li><a href="<?= $root ?>index.php" class="btn-header">Home</a></li>
+                    <?php if($userLogged): ?>
+                        <li><a href="<?= $root ?>user/home.php" class="btn-header">Home</a></li>
+                    <?php else: ?>
+                        <li><a href="<?= $root ?>index.php" class="btn-header">Home</a></li>
+                    <?php endif; ?>
                 <?php endif; ?>
                 <?php if($userLogged): ?>
                     <!-- Cart icon — only for logged-in users on non-landing pages -->

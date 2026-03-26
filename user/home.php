@@ -3,11 +3,13 @@ session_start();
 if(!isset($_SESSION['user'])){ header("Location: ../auth/login.php"); exit; }
 include("../config/db.php");
 
-// ── Add to Cart (AJAX-friendly POST) ──
+// ── Add to Cart ──
 if(isset($_POST['add_to_cart'])){
-    $pid   = intval($_POST['product_id']);
-    $pname = $_POST['product_name'];
-    $pprice= floatval($_POST['product_price']);
+    // Use raw string ID — intval() converts 'e1','e2' etc. to 0 making every extra product overwrite the same slot
+    $pid    = trim($_POST['product_id']);
+    $pname  = trim($_POST['product_name']);
+    $pprice = floatval($_POST['product_price']);
+    if($pid === '') $pid = md5($pname); // fallback unique key by name
     if(!isset($_SESSION['cart'][$pid])){
         $_SESSION['cart'][$pid] = ['name'=>$pname,'price'=>$pprice,'qty'=>1];
     } else {
@@ -315,7 +317,7 @@ body.dark-mode .message.success{background:#1a3327;border-color:#2d6a4f;color:#6
     transition:background 0.3s,color 0.3s,border-color 0.3s;
     box-shadow:0 3px 12px rgba(0,0,0,0.2);
 }
-#mode-toggle:hover{background: #28a745;color:#fff;}
+#mode-toggle:hover{background: #28a745;color: #fff;}
 body.dark-mode #mode-toggle{background:#1a1a1a;color: #28a745;border-color: #28a745;}
 body.dark-mode #mode-toggle:hover{background: #28a745;color: #1a1a1a;}
 
@@ -422,7 +424,7 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
 
         <!-- Quick info row -->
         <div class="contact-info-row">
-            <span class="contact-info-item"><i class="fa-solid fa-phone"></i> +94 76 734 5755</span>
+            <span class="contact-info-item"><i class="fa-solid fa-phone"></i> +94 77 123 4567</span>
             <span class="contact-info-item"><i class="fa-solid fa-envelope"></i> support@gymstore.lk</span>
             <span class="contact-info-item"><i class="fa-solid fa-location-dot"></i> Colombo, Sri Lanka</span>
         </div>
