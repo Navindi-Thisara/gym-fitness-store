@@ -318,9 +318,9 @@ body.dark-mode .message.success{background:#1a3327;border-color:#2d6a4f;color:#6
     transition:background 0.3s,color 0.3s,border-color 0.3s;
     box-shadow:0 2px 8px rgba(0,0,0,0.2);
 }
-#mode-toggle:hover{background:#28a745;color:#fff;}
-body.dark-mode #mode-toggle{background:#1a1a1a;color:#f0c040;border-color:#f0c040;}
-body.dark-mode #mode-toggle:hover{background:#f0c040;color:#1a1a1a;}
+#mode-toggle:hover{background: #28a745;color: #fff;}
+body.dark-mode #mode-toggle{background: #1a1a1a;color: #28a745;border-color: #28a745;}
+body.dark-mode #mode-toggle:hover{background: #28a745;color: #1a1a1a;}
 
 /* ── Footer ── */
 .main-footer{text-align:center;padding:12px 10px;font-size:13px;flex-shrink:0;transition:background 0.3s,color 0.3s;}
