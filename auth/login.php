@@ -212,7 +212,7 @@ body.dark-mode  .main-footer { background:#1a1a1a; color:#fff; }
 
             <!-- Forgot password -->
             <div class="forgot-link">
-                <a href="#">Forgot password?</a>
+                <a href="forgot_password.php">Forgot password?</a>
             </div>
 
             <button type="submit" class="btn-register">
