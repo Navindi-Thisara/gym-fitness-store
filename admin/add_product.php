@@ -81,8 +81,8 @@ body.dark-mode .message.success{background:#1a3327;border-color:#2d6a4f;color:#6
 .mode-toggle-container{position:fixed;bottom:20px;right:24px;z-index:999;}
 #mode-toggle{font-size:18px;width:42px;height:42px;border-radius:50%;border:2px solid #28a745;background:#fff;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.3s,color 0.3s,border-color 0.3s;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
 #mode-toggle:hover{background:#28a745;color:#fff;}
-body.dark-mode #mode-toggle{background:#1a1a1a;color:#f0c040;border-color:#f0c040;}
-body.dark-mode #mode-toggle:hover{background:#f0c040;color:#1a1a1a;}
+body.dark-mode #mode-toggle{background:#1a1a1a;color:#28a745;border-color:#28a745;}
+body.dark-mode #mode-toggle:hover{background:#28a745;color:#1a1a1a;}
 .main-footer{text-align:center;padding:12px 10px;font-size:13px;flex-shrink:0;transition:background 0.3s,color 0.3s;}
 body.light-mode .main-footer{background:#f0f0f0;color:#555;}body.dark-mode .main-footer{background:#1a1a1a;color:#aaa;}
 </style>
