@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Generation Time: Mar 27, 2026 at 03:04 AM
+-- Generation Time: Mar 27, 2026 at 03:37 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -81,8 +81,8 @@ CREATE TABLE `orders` (
 CREATE TABLE `password_resets` (
   `id` int(11) NOT NULL,
   `email` varchar(100) DEFAULT NULL,
-  `token` varchar(100) DEFAULT NULL,
-  `expires_at` datetime DEFAULT NULL
+  `token` varchar(255) DEFAULT NULL,
+  `expires_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -90,7 +90,7 @@ CREATE TABLE `password_resets` (
 --
 
 INSERT INTO `password_resets` (`id`, `email`, `token`, `expires_at`) VALUES
-(6, 'navindithisara214@gmail.com', '35fc5af78811c804aaad0cb6093c82950ab07fc62dc5e17e5256a52e6b47e753', '2026-03-26 18:17:22');
+(9, 'navindithisara214@gmail.com', '9cb6afa1519ede3234692c13e2908eefa626aa61e4226ed6f6efac08ec670c31', '2026-03-27 04:20:03');
 
 -- --------------------------------------------------------
 
@@ -202,7 +202,7 @@ ALTER TABLE `orders`
 -- AUTO_INCREMENT for table `password_resets`
 --
 ALTER TABLE `password_resets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `products`

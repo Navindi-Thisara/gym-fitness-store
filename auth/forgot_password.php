@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Asia/Colombo');
 session_start();
 include("../config/db.php");
 
