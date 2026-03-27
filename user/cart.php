@@ -399,8 +399,8 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
                         <span class="amount" id="grandTotal">LKR <?= number_format($total, 0) ?></span>
                     </div>
 
-                    <a href="#" class="btn-checkout"
-                       onclick="alert('Checkout coming soon!'); return false;">
+                    <a href="checkout.php" class="btn-checkout"
+                        onclick="return confirm('Proceed to checkout?');">
                         <i class="fa-solid fa-lock"></i> Proceed to Checkout
                     </a>
                     <a href="home.php" class="btn-continue">

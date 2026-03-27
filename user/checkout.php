@@ -34,34 +34,54 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])){
     } elseif(strlen($address) < 5){
         $error = "Please enter a valid delivery address.";
     } else {
-        // Save order to DB
-        $uid  = intval($user['id']);
-        $fn   = $conn->real_escape_string($full_name);
-        $ph   = $conn->real_escape_string($phone);
-        $addr = $conn->real_escape_string($address);
-        $cty  = $conn->real_escape_string($city);
-        $pst  = $conn->real_escape_string($postal);
-        $pay  = $conn->real_escape_string($payment);
-        $tot  = floatval($total);
+        // Prepare values
+        $uid   = intval($user['id']);
+        $fn    = $conn->real_escape_string($full_name);
+        $ph    = $conn->real_escape_string($phone);
+        $addr  = $conn->real_escape_string($address);
+        $cty   = $conn->real_escape_string($city);
+        $pst   = $conn->real_escape_string($postal);
+        $pay   = $conn->real_escape_string($payment);
+        $tot   = floatval($total);
+        $email = $conn->real_escape_string($user['email'] ?? '');
+        $qty   = intval($itemCount); // total item count for orders.quantity
 
-        // Insert order
-        $conn->query("INSERT INTO orders (user_id, full_name, phone, address, city, postal,
-                      payment_method, total_amount, status, created_at)
-                      VALUES ($uid,'$fn','$ph','$addr','$cty','$pst','$pay',$tot,'Pending',NOW())");
-        $orderId = $conn->insert_id;
+        // ── Insert order ──
+        $result = $conn->query("INSERT INTO orders 
+            (user_id, full_name, email, phone, address, city, postal,
+             payment_method, total_amount, quantity, status, created_at)
+            VALUES 
+            ($uid,'$fn','$email','$ph','$addr','$cty','$pst',
+             '$pay',$tot,$qty,'Pending',NOW())");
 
-        // Insert order items
-        foreach($cart as $pid => $item){
-            $iname  = $conn->real_escape_string($item['name']);
-            $iprice = floatval($item['price']);
-            $iqty   = intval($item['qty']);
-            $conn->query("INSERT INTO order_items (order_id, product_name, price, quantity)
-                          VALUES ($orderId,'$iname',$iprice,$iqty)");
+        if(!$result){
+            $error = "Failed to place order. Please try again. (" . $conn->error . ")";
+        } else {
+            $orderId = $conn->insert_id;
+
+            // ── Insert order items ──
+            $itemError = false;
+            foreach($cart as $pid => $item){
+                $pidInt = intval($pid);
+                $iprice = floatval($item['price']);
+                $iqty   = intval($item['qty']);
+
+                $r = $conn->query("INSERT INTO order_items (order_id, product_id, price, quantity)
+                                   VALUES ($orderId, $pidInt, $iprice, $iqty)");
+                if(!$r){
+                    $itemError = true;
+                    error_log("order_items insert failed for product $pidInt: " . $conn->error);
+                }
+            }
+
+            if($itemError){
+                $error = "Order saved but some items failed. Contact support. (Order #$orderId)";
+            } else {
+                // ── Clear cart & show success ──
+                unset($_SESSION['cart']);
+                $success = $orderId;
+            }
         }
-
-        // Clear cart
-        unset($_SESSION['cart']);
-        $success = $orderId;
     }
 }
 ?>
@@ -280,9 +300,9 @@ body.dark-mode .order-id-badge{background:#1a3327;border-color:#2d6a4f;}
     transition:background 0.3s,color 0.3s,border-color 0.3s;
     box-shadow:0 2px 8px rgba(0,0,0,0.2);
 }
-#mode-toggle:hover{background:#28a745;color:#fff;}
-body.dark-mode #mode-toggle{background:#1a1a1a;color:#f0c040;border-color:#f0c040;}
-body.dark-mode #mode-toggle:hover{background:#f0c040;color:#1a1a1a;}
+#mode-toggle:hover{background: #28a745;color: #fff;}
+body.dark-mode #mode-toggle{background: #1a1a1a;color: #28a745;border-color: #28a745;}
+body.dark-mode #mode-toggle:hover{background: #28a745;color: #1a1a1a;}
 
 /* ── Footer ── */
 .main-footer{text-align:center;padding:12px 10px;font-size:13px;flex-shrink:0;transition:background 0.3s,color 0.3s;}

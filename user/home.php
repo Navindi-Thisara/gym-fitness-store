@@ -1,19 +1,21 @@
 <?php
 session_start();
+
 if(!isset($_SESSION['user'])){ header("Location: ../auth/login.php"); exit; }
 include("../config/db.php");
 
 // ── Add to Cart ──
 if(isset($_POST['add_to_cart'])){
-    // Use raw string ID — intval() converts 'e1','e2' etc. to 0 making every extra product overwrite the same slot
-    $pid    = trim($_POST['product_id']);
+    $pid    = intval($_POST['product_id']);
     $pname  = trim($_POST['product_name']);
     $pprice = floatval($_POST['product_price']);
-    if($pid === '') $pid = md5($pname); // fallback unique key by name
-    if(!isset($_SESSION['cart'][$pid])){
-        $_SESSION['cart'][$pid] = ['name'=>$pname,'price'=>$pprice,'qty'=>1];
-    } else {
-        $_SESSION['cart'][$pid]['qty']++;
+
+    if($pid > 0){
+        if(!isset($_SESSION['cart'][$pid])){
+            $_SESSION['cart'][$pid] = ['name'=>$pname,'price'=>$pprice,'qty'=>1];
+        } else {
+            $_SESSION['cart'][$pid]['qty']++;
+        }
     }
     header("Location: ".$_SERVER['PHP_SELF']); exit;
 }
@@ -26,34 +28,22 @@ if(isset($_POST['contact_submit'])){
     $c_subject = trim($_POST['c_subject'] ?? '');
     $c_message = trim($_POST['c_message'] ?? '');
 
-    // ── All fields required ──
     if($c_name === '' || $c_email === '' || $c_message === ''){
         $c_error = "All fields are required. Please fill in every field.";
-
-    // ── Name: letters and spaces only, no digits/underscores/special chars ──
     } elseif(!preg_match('/^[a-zA-Z\s]+$/', $c_name)){
-        $c_error = "Name can only contain letters and spaces — no numbers, underscores or special characters.";
-
+        $c_error = "Name can only contain letters and spaces.";
     } elseif(strlen($c_name) < 2){
         $c_error = "Name must be at least 2 characters.";
-
     } elseif(strlen($c_name) > 80){
         $c_error = "Name must not exceed 80 characters.";
-
-    // ── Email: must contain @ and pass format check ──
     } elseif(strpos($c_email, '@') === false){
         $c_error = "Email address must contain an @ symbol.";
-
     } elseif(!filter_var($c_email, FILTER_VALIDATE_EMAIL)){
         $c_error = "Please enter a valid email address (e.g. you@example.com).";
-
-    // ── Message: minimum length ──
     } elseif(strlen($c_message) < 10){
         $c_error = "Message is too short — please write at least 10 characters.";
-
     } elseif(strlen($c_message) > 2000){
         $c_error = "Message is too long — maximum 2000 characters allowed.";
-
     } else {
         $cn = $conn->real_escape_string($c_name);
         $ce = $conn->real_escape_string($c_email);
@@ -66,41 +56,14 @@ if(isset($_POST['contact_submit'])){
     }
 }
 
-// ── Products — LKR prices ──
-$extra_products = [
-  ['id'=>'e1', 'name'=>'Whey Protein 2kg',     'price'=>'16500','category'=>'Supplements','badge'=>'Best Seller','icon'=>'fa-jar','image'=>'whey.jpg'],
-    ['id'=>'e2', 'name'=>'Creatine Monohydrate',  'price'=>'8200', 'category'=>'Supplements','badge'=>'Popular',    'icon'=>'fa-flask','image'=>'creatine.png'],
-    ['id'=>'e3', 'name'=>'Pre-Workout Powder',     'price'=>'11400','category'=>'Supplements','badge'=>'New',        'icon'=>'fa-bolt','image'=>'preworkout.png'],
-    ['id'=>'e4', 'name'=>'BCAA Capsules 60s',      'price'=>'6500', 'category'=>'Supplements','badge'=>'',           'icon'=>'fa-capsules','image'=>'bcaa.jpg'],
-    ['id'=>'e5', 'name'=>'Mass Gainer 3kg',        'price'=>'18000','category'=>'Supplements','badge'=>'New',        'icon'=>'fa-weight-scale','image'=>'massgainer.png'],
-    ['id'=>'e6', 'name'=>'Vitamin C 1000mg',       'price'=>'2900', 'category'=>'Supplements','badge'=>'',           'icon'=>'fa-tablets','image'=>'vitaminc.png'],
-    ['id'=>'e7', 'name'=>'Adjustable Dumbbells',   'price'=>'42500','category'=>'Equipment',  'badge'=>'Top Pick',   'icon'=>'fa-dumbbell','image'=>'dumbbells.png'],
-    ['id'=>'e8', 'name'=>'Pull-Up Bar',             'price'=>'13000','category'=>'Equipment',  'badge'=>'Popular',    'icon'=>'fa-arrow-up','image'=>'pullupbar.png'],
-    ['id'=>'e9', 'name'=>'Resistance Bands Set',   'price'=>'6200', 'category'=>'Equipment',  'badge'=>'',           'icon'=>'fa-circle-nodes','image'=>'bands.png'],
-    ['id'=>'e10','name'=>'Foam Roller',             'price'=>'7500', 'category'=>'Equipment',  'badge'=>'',           'icon'=>'fa-circle','image'=>'foamroller.png'],
-    ['id'=>'e11','name'=>'Yoga Mat Pro',            'price'=>'9200', 'category'=>'Accessories','badge'=>'',           'icon'=>'fa-person','image'=>'yogamat.png'],
-    ['id'=>'e12','name'=>'Gym Gloves',              'price'=>'4900', 'category'=>'Accessories','badge'=>'',           'icon'=>'fa-hand','image'=>'gloves.png'],
-    ['id'=>'e13','name'=>'Shaker Bottle 700ml',     'price'=>'3200', 'category'=>'Accessories','badge'=>'',           'icon'=>'fa-bottle-water','image'=>'shaker.png'],
-    ['id'=>'e14','name'=>'Gym Bag 35L',             'price'=>'8800', 'category'=>'Accessories','badge'=>'New',        'icon'=>'fa-bag-shopping','image'=>'gymbag.png'],
-    ['id'=>'e15','name'=>'Knee Sleeves (Pair)',     'price'=>'5600', 'category'=>'Accessories','badge'=>'',           'icon'=>'fa-person-running','image'=>'kneesleeves.png'],
-    ['id'=>'e16','name'=>'Lifting Belt',            'price'=>'7200', 'category'=>'Accessories','badge'=>'Popular',    'icon'=>'fa-circle-dot','image'=>'liftingbelt.png'],
-];
-
-$db_products = [];
-$result = $conn->query("SELECT * FROM products");
+// ── Load products from DB only ──
+$all_products = [];
+$result = $conn->query("SELECT * FROM products ORDER BY category, name");
 if($result && $result->num_rows > 0){
     while($row = $result->fetch_assoc()){
-        $row['category'] = $row['category'] ?? 'Other';
-        $db_products[] = $row;
+        $all_products[] = $row;
     }
 }
-$db_names = array_column($db_products, 'name');
-foreach($extra_products as $ep){
-    if(!in_array($ep['name'], $db_names)) $db_products[] = $ep;
-}
-$all_products = $db_products;
-
-// Unique categories
 $categories = array_unique(array_column($all_products, 'category'));
 sort($categories);
 ?>
@@ -121,17 +84,16 @@ body.dark-mode{background:#121212;color:#eee;}
 
 .main-content{flex:1;padding:30px 24px 70px;max-width:1300px;margin:0 auto;width:100%;}
 
-/* ── Section heading ── */
 .section-heading{font-size:1.5rem;font-weight:700;margin:0 0 4px;color:#1a1a1a;display:flex;align-items:center;gap:10px;}
 body.dark-mode .section-heading{color:#f0f0f0;}
 .section-heading i{color:#28a745;}
 .section-sub{color:#888;font-size:0.88rem;margin:0 0 20px;}
 
-/* ── Search & Filter Bar ── */
+/* ── Filter Bar ── */
 .filter-bar{
-    display:flex; flex-wrap:wrap; gap:12px;
-    align-items:center; margin-bottom:28px;
-    background:#fff; border-radius:12px;
+    display:flex;flex-wrap:wrap;gap:12px;
+    align-items:center;margin-bottom:28px;
+    background:#fff;border-radius:12px;
     padding:14px 18px;
     box-shadow:0 2px 12px rgba(0,0,0,0.07);
 }
@@ -214,9 +176,7 @@ body.dark-mode .product-info h3{color:#f0f0f0;}
 }
 .btn-cart:hover{background:#218838;transform:translateY(-1px);box-shadow:0 5px 14px rgba(40,167,69,0.4);}
 .btn-cart:active{transform:translateY(0);}
-.btn-cart.added{background:#155724;}
 
-/* No results */
 .no-results{
     grid-column:1/-1;text-align:center;
     padding:60px 20px;color:#aaa;
@@ -224,7 +184,6 @@ body.dark-mode .product-info h3{color:#f0f0f0;}
 .no-results i{font-size:3rem;display:block;margin-bottom:12px;color:#ccc;}
 body.dark-mode .no-results i{color:#444;}
 
-/* ── Section divider ── */
 .section-divider{border:none;border-top:2px solid #e8e8e8;margin:50px 0 38px;}
 body.dark-mode .section-divider{border-color:#2a2a2a;}
 
@@ -263,7 +222,6 @@ body.dark-mode .contact-info-item{color:#aaa;}
 .input-group label{display:block;font-size:0.8rem;font-weight:600;color:#555;margin-bottom:5px;letter-spacing:0.3px;}
 body.dark-mode .input-group label{color:#aaa;}
 .input-group .field-icon{position:absolute;left:13px;top:38px;color:#aaa;font-size:0.85rem;pointer-events:none;}
-.input-group.no-label .field-icon{top:50%;transform:translateY(-50%);}
 .input-group.textarea-group .field-icon{top:14px;transform:none;}
 
 .input-group input,
@@ -307,9 +265,9 @@ body.dark-mode .input-group textarea:focus{border-color:#28a745;background:#2f2f
 body.dark-mode .message.error{background:#3b1f1f;border-color:#7b3535;color:#f5a5a5;}
 body.dark-mode .message.success{background:#1a3327;border-color:#2d6a4f;color:#6fcf97;}
 
-/* ── Mode toggle — fixed bottom-right, visible while scrolling ── */
-.page-outer{ flex:1; display:flex; flex-direction:column; }
-.mode-toggle-container{ position:fixed; bottom:80px; right:24px; z-index:999; }
+/* ── Mode Toggle ── */
+.page-outer{flex:1;display:flex;flex-direction:column;}
+.mode-toggle-container{position:fixed;bottom:80px;right:24px;z-index:999;}
 #mode-toggle{
     font-size:18px;width:42px;height:42px;
     border-radius:50%;border:2px solid #28a745;
@@ -318,7 +276,7 @@ body.dark-mode .message.success{background:#1a3327;border-color:#2d6a4f;color:#6
     transition:background 0.3s,color 0.3s,border-color 0.3s;
     box-shadow:0 2px 8px rgba(0,0,0,0.2);
 }
-#mode-toggle:hover{background: #28a745;color: #fff;}
+#mode-toggle:hover{background: #28a745;color:#fff;}
 body.dark-mode #mode-toggle{background: #1a1a1a;color: #28a745;border-color: #28a745;}
 body.dark-mode #mode-toggle:hover{background: #28a745;color: #1a1a1a;}
 
@@ -353,7 +311,6 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
     <h2 class="section-heading"><i class="fa-solid fa-bag-shopping"></i> Our Products</h2>
     <p class="section-sub">Premium supplements, equipment &amp; accessories — prices in LKR</p>
 
-    <!-- Search & Filter Bar -->
     <div class="filter-bar">
         <div class="search-wrap">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -370,26 +327,34 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
         <span class="results-count" id="resultsCount"></span>
     </div>
 
-    <!-- Products Grid -->
     <div class="products-grid" id="productsGrid">
     <?php foreach($all_products as $i => $row):
         $icon     = $row['icon']     ?? 'fa-box';
         $badge    = $row['badge']    ?? '';
         $category = $row['category'] ?? 'Other';
-        $pid      = $row['id']       ?? $i;
+        $pid      = intval($row['id']);
         $delay    = ($i % 8) * 0.06;
         $hasImg   = isset($row['image']) && !empty($row['image']) && file_exists("../assets/images/".$row['image']);
         $price    = number_format((float)$row['price'], 0);
     ?>
-        <div class="product-card" data-name="<?= strtolower(htmlspecialchars($row['name'])) ?>" data-cat="<?= htmlspecialchars($category) ?>" style="animation-delay:<?= $delay ?>s">
-            <?php if($badge): ?><span class="product-badge"><?= htmlspecialchars($badge) ?></span><?php endif; ?>
+        <div class="product-card"
+             data-name="<?= strtolower(htmlspecialchars($row['name'])) ?>"
+             data-cat="<?= htmlspecialchars($category) ?>"
+             style="animation-delay:<?= $delay ?>s">
+
+            <?php if($badge): ?>
+                <span class="product-badge"><?= htmlspecialchars($badge) ?></span>
+            <?php endif; ?>
+
             <div class="product-img-wrap">
                 <?php if($hasImg): ?>
-                    <img src="../assets/images/<?= htmlspecialchars($row['image']) ?>" alt="<?= htmlspecialchars($row['name']) ?>">
+                    <img src="../assets/images/<?= htmlspecialchars($row['image']) ?>"
+                         alt="<?= htmlspecialchars($row['name']) ?>">
                 <?php else: ?>
-                    <i class="fa-solid <?= $icon ?>"></i>
+                    <i class="fa-solid <?= htmlspecialchars($icon) ?>"></i>
                 <?php endif; ?>
             </div>
+
             <div class="product-info">
                 <div class="product-category-tag"><?= htmlspecialchars($category) ?></div>
                 <h3><?= htmlspecialchars($row['name']) ?></h3>
@@ -397,7 +362,7 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
                 <form method="POST" style="margin:0;">
                     <input type="hidden" name="product_id"    value="<?= $pid ?>">
                     <input type="hidden" name="product_name"  value="<?= htmlspecialchars($row['name']) ?>">
-                    <input type="hidden" name="product_price" value="<?= $row['price'] ?>">
+                    <input type="hidden" name="product_price" value="<?= floatval($row['price']) ?>">
                     <button type="submit" name="add_to_cart" class="btn-cart">
                         <i class="fa-solid fa-cart-plus"></i> Add to Cart
                     </button>
@@ -405,6 +370,7 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
             </div>
         </div>
     <?php endforeach; ?>
+
         <div class="no-results" id="noResults" style="display:none;">
             <i class="fa-solid fa-box-open"></i>
             No products found. Try a different search or category.
@@ -418,20 +384,15 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
     <p class="section-sub">Questions, feedback or bulk orders? We're here to help.</p>
 
     <div class="contact-card">
-        <!-- Green header bar -->
         <div class="contact-card-header">
             <h2><i class="fa-solid fa-envelope-open-text"></i> Contact Us</h2>
             <p>Fill in the form and our team will respond within 24 hours.</p>
         </div>
-
-        <!-- Quick info row -->
         <div class="contact-info-row">
             <span class="contact-info-item"><i class="fa-solid fa-phone"></i> +94 77 123 4567</span>
             <span class="contact-info-item"><i class="fa-solid fa-envelope"></i> support@gymstore.lk</span>
             <span class="contact-info-item"><i class="fa-solid fa-location-dot"></i> Colombo, Sri Lanka</span>
         </div>
-
-        <!-- Form -->
         <div class="contact-form-body">
             <?php if($c_error): ?>
                 <div class="message error"><i class="fa-solid fa-circle-exclamation"></i> <?= $c_error ?></div>
@@ -480,7 +441,6 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
 
 </div><!-- end main-content -->
 
-<!-- Mode toggle — bottom-right corner, same as login page -->
 <div class="mode-toggle-container">
     <button id="mode-toggle" title="Toggle Light/Dark Mode">
         <i class="fa-solid fa-moon"></i>
@@ -491,7 +451,6 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
 <?php include("../includes/footer.php"); ?>
 
 <script>
-/* ── Search & Category Filter ── */
 var activeCategory = 'all';
 
 function setCategory(btn){
@@ -521,10 +480,8 @@ function filterProducts(){
     document.getElementById('resultsCount').textContent = visible + ' item' + (visible !== 1 ? 's' : '');
 }
 
-// Init count
 filterProducts();
 
-/* ── Dark / Light Mode ── */
 (function(){
     var modeBtn = document.getElementById('mode-toggle');
     var icon    = modeBtn.querySelector('i');
