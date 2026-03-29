@@ -78,7 +78,7 @@ body.dark-mode .input-group input:focus,body.dark-mode .input-group select:focus
 .message.success{background:#eafaf1;color:#1e7e34;border:1px solid #b2dfdb;}
 body.dark-mode .message.error{background:#3b1f1f;border-color:#7b3535;}
 body.dark-mode .message.success{background:#1a3327;border-color:#2d6a4f;color:#6fcf97;}
-.mode-toggle-container{position:fixed;bottom:20px;right:24px;z-index:999;}
+.mode-toggle-container{position:absolute;bottom:20px;right:24px;z-index:999;}
 #mode-toggle{font-size:18px;width:42px;height:42px;border-radius:50%;border:2px solid #28a745;background:#fff;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.3s,color 0.3s,border-color 0.3s;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
 #mode-toggle:hover{background:#28a745;color:#fff;}
 body.dark-mode #mode-toggle{background:#1a1a1a;color:#28a745;border-color:#28a745;}

@@ -112,7 +112,7 @@ body.dark-mode .prod-icon{background:linear-gradient(135deg,#1a2e1a,#1e2e1e);}
 body.dark-mode .section-divider{border-color:#2a2a2a;}
 
 /* ── Mode toggle — bottom-right of page-outer, same as login page ── */
-.mode-toggle-container{position:absolute;bottom:16px;right:24px;z-index:10;}
+.mode-toggle-container{position:fixed;bottom:16px;right:24px;z-index:10;}
 #mode-toggle{
     font-size:18px;width:42px;height:42px;
     border-radius:50%;border:2px solid #28a745;
