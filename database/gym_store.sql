@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Generation Time: Mar 27, 2026 at 01:35 PM
+-- Generation Time: Mar 29, 2026 at 09:07 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -92,7 +92,7 @@ INSERT INTO `orders` (`id`, `user_id`, `quantity`, `status`, `created_at`, `full
 (19, 2, 2, 'Pending', '2026-03-27 12:23:58', 'Navindi Thisara', 'navindithisara214@gmail.com', 'No.02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'card', 26200.00),
 (20, 2, 1, 'Pending', '2026-03-27 12:26:53', 'Navindi Thisara', 'navindithisara214@gmail.com', 'No. 02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'cod', 3200.00),
 (21, 2, 1, 'Pending', '2026-03-27 12:28:58', 'Navindi Thisara', 'navindithisara214@gmail.com', 'No. 02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'bank', 2900.00),
-(22, 2, 1, 'Pending', '2026-03-27 12:34:55', 'Navindi Thisara', 'navindithisara214@gmail.com', 'No.02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'cod', 16500.00);
+(22, 2, 1, 'Completed', '2026-03-27 12:34:55', 'Navindi Thisara', 'navindithisara214@gmail.com', 'No.02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'cod', 16500.00);
 
 -- --------------------------------------------------------
 
@@ -131,6 +131,13 @@ CREATE TABLE `password_resets` (
   `token` varchar(255) DEFAULT NULL,
   `expires_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `password_resets`
+--
+
+INSERT INTO `password_resets` (`id`, `email`, `token`, `expires_at`) VALUES
+(11, 'admin@gymstore.com', '83c393ac60f941babfdc6370a7fa81b3ff99879ffe0d62dd1a3e8f4acf34da2f', '2026-03-27 22:22:12');
 
 -- --------------------------------------------------------
 
@@ -192,7 +199,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`) VALUES
-(1, 'Admin User', 'admin@gymstore.com', '$2y$10$HsFVaZgHXlg8sglEhqTfvu2okt4At.WD80PjyCzunUisqP7cThS1S', 'admin'),
+(1, 'Admin', 'admin@gymstore.com', '$2y$10$HsFVaZgHXlg8sglEhqTfvu2okt4At.WD80PjyCzunUisqP7cThS1S', 'admin'),
 (2, 'Navindi Thisara', 'navindithisara214@gmail.com', '$2y$10$1140axZ.Xgm2ojgN5svqZ.dZajFJwUHt0MBFLXtJzNRitbacp10LC', 'user');
 
 --
@@ -279,13 +286,13 @@ ALTER TABLE `order_items`
 -- AUTO_INCREMENT for table `password_resets`
 --
 ALTER TABLE `password_resets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `users`

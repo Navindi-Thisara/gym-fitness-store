@@ -44,6 +44,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;}body{margin:0;min-height:100vh;display:flex;flex-direction:column;font-family:'Arial',sans-serif;transition:background 0.3s,color 0.3s;}body.light-mode{background:#f0f2f5;color:#222;}body.dark-mode{background:#121212;color:#eee;}
+.page-outer{flex:1;position:relative;display:flex;flex-direction:column;}
 .admin-wrap{flex:1;max-width:600px;margin:0 auto;width:100%;padding:32px 24px 60px;}
 .page-title{font-size:1.5rem;font-weight:700;margin:0 0 6px;color:#1a1a1a;display:flex;align-items:center;gap:10px;}body.dark-mode .page-title{color:#f0f0f0;}.page-title i{color:#28a745;}.page-sub{color:#888;font-size:0.88rem;margin:0 0 24px;}
 .form-card{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.08);padding:32px;}body.dark-mode .form-card{background:#1e1e1e;}
@@ -60,11 +61,12 @@ body.dark-mode .input-group input,body.dark-mode .input-group select{background:
 .message{padding:11px 14px;border-radius:8px;margin-bottom:18px;font-size:0.9rem;display:flex;align-items:center;gap:8px;}
 .message.error{background:#fdecea;color:#c0392b;border:1px solid #f5c6cb;}.message.success{background:#eafaf1;color:#1e7e34;border:1px solid #b2dfdb;}
 body.dark-mode .message.error{background:#3b1f1f;border-color:#7b3535;}body.dark-mode .message.success{background:#1a3327;border-color:#2d6a4f;color:#6fcf97;}
-.mode-toggle-container{position:absolute;bottom:20px;right:24px;z-index:999;}#mode-toggle{font-size:18px;width:42px;height:42px;border-radius:50%;border:2px solid #28a745;background:#fff;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.3s,color 0.3s,border-color 0.3s;box-shadow:0 2px 8px rgba(0,0,0,0.2);}#mode-toggle:hover{background: #28a745;color:#fff;}body.dark-mode #mode-toggle{background: #1a1a1a;color: #28a745;border-color: #28a745;}body.dark-mode #mode-toggle:hover{background: #28a745;color: #1a1a1a;}
+.mode-toggle-container{position:fixed;bottom:80px;right:24px;z-index:999;}#mode-toggle{font-size:18px;width:42px;height:42px;border-radius:50%;border:2px solid #28a745;background:#fff;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.3s,color 0.3s,border-color 0.3s;box-shadow:0 2px 8px rgba(0,0,0,0.2);}#mode-toggle:hover{background:#28a745;color:#fff;}body.dark-mode #mode-toggle{background:#1a1a1a;color:#28a745;border-color:#28a745;}body.dark-mode #mode-toggle:hover{background:#28a745;color:#1a1a1a;}
 .main-footer{text-align:center;padding:12px 10px;font-size:13px;flex-shrink:0;transition:background 0.3s,color 0.3s;}body.light-mode .main-footer{background:#f0f0f0;color:#555;}body.dark-mode .main-footer{background:#1a1a1a;color:#aaa;}
 </style></head><body class="light-mode">
 <script>(function(){if(localStorage.getItem('mode')==='dark'){document.body.classList.remove('light-mode');document.body.classList.add('dark-mode');}})();</script>
 <?php include("../includes/header.php"); ?>
+<div class="page-outer">
 <div class="admin-wrap">
     <a href="dashboard.php" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
     <h2 class="page-title"><i class="fa-solid fa-pen"></i> Edit Product</h2>
@@ -92,6 +94,7 @@ body.dark-mode .message.error{background:#3b1f1f;border-color:#7b3535;}body.dark
     </div>
 </div>
 <div class="mode-toggle-container"><button id="mode-toggle"><i class="fa-solid fa-moon"></i></button></div>
+</div><!-- end page-outer -->
 <?php include("../includes/footer.php"); ?>
 <script>(function(){var b=document.getElementById('mode-toggle'),i=b.querySelector('i');if(document.body.classList.contains('dark-mode')){i.classList.remove('fa-moon');i.classList.add('fa-sun');}b.addEventListener('click',function(){var d=document.body.classList.contains('dark-mode');if(d){document.body.classList.remove('dark-mode');document.body.classList.add('light-mode');i.classList.remove('fa-sun');i.classList.add('fa-moon');localStorage.setItem('mode','light');}else{document.body.classList.remove('light-mode');document.body.classList.add('dark-mode');i.classList.remove('fa-moon');i.classList.add('fa-sun');localStorage.setItem('mode','dark');}});})();</script>
 </body></html>
