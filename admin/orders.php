@@ -247,7 +247,7 @@ body.dark-mode .alert.success{background:#1a3327;border-color:#2d6a4f;color:#6fc
 body.dark-mode .empty-state i{color:#444;}
 
 /* ── Mode toggle ── */
-.mode-toggle-container{position:absolute;bottom:16px;right:24px;z-index:10;}
+.mode-toggle-container{position:fixed;bottom:80px;right:24px;z-index:999;}
 #mode-toggle{
     font-size:18px;width:42px;height:42px;
     border-radius:50%;border:2px solid #28a745;
