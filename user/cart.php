@@ -181,6 +181,16 @@ body.dark-mode .cart-item-subtotal{color:#f0f0f0;}
 }
 .btn-remove:hover{color:#e74c3c;}
 
+/* Buy Now btn */
+.btn-buynow{
+    background:none; border:1.5px solid #28a745; color:#28a745;
+    font-size:0.78rem; cursor:pointer; padding:4px 8px;
+    border-radius:6px; text-decoration:none; flex-shrink:0;
+    transition:background 0.2s,color 0.2s;
+    display:flex; align-items:center; gap:4px;
+}
+.btn-buynow:hover{background:#28a745;color:#fff;}
+
 /* Cart footer actions */
 .cart-actions{
     display:flex; justify-content:space-between;
@@ -266,7 +276,7 @@ body.dark-mode .summary-row.total{color:#f0f0f0;border-color:#2a2a2a;}
 
 /* ── Mode toggle — absolute bottom-right inside wrapper, same as login page ── */
 .page-outer{ position:relative; flex:1; display:flex; flex-direction:column; }
-.mode-toggle-container{ position:absolute; bottom:16px; right:24px; z-index:10; }
+.mode-toggle-container{position:fixed;bottom:80px;right:24px;z-index:999;}
 #mode-toggle{
     font-size:18px;width:42px;height:42px;
     border-radius:50%;border:2px solid #28a745;
@@ -275,9 +285,9 @@ body.dark-mode .summary-row.total{color:#f0f0f0;border-color:#2a2a2a;}
     transition:background 0.3s,color 0.3s,border-color 0.3s;
     box-shadow:0 2px 8px rgba(0,0,0,0.2);
 }
-#mode-toggle:hover{background: #28a745;color: #fff;}
-body.dark-mode #mode-toggle{background: #1a1a1a;color: #28a745;border-color: #28a745;}
-body.dark-mode #mode-toggle:hover{background: #28a745;color: #1a1a1a;}
+#mode-toggle:hover{background:#28a745;color:#fff;}
+body.dark-mode #mode-toggle{background:#1a1a1a;color:#28a745;border-color:#28a745;}
+body.dark-mode #mode-toggle:hover{background:#28a745;color:#1a1a1a;}
 
 /* ── Footer ── */
 .main-footer{text-align:center;padding:12px 10px;font-size:13px;flex-shrink:0;transition:background 0.3s,color 0.3s;}
@@ -356,6 +366,13 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
                         LKR <?= number_format($subtotal, 0) ?>
                     </div>
 
+                    <!-- Buy Now (single item) -->
+                    <a href="checkout.php?buy_pid=<?= urlencode($pid) ?>"
+                       class="btn-buynow" title="Buy this item only"
+                       onclick="return confirm('Checkout this item only?')">
+                        <i class="fa-solid fa-bolt"></i>
+                    </a>
+
                     <!-- Remove -->
                     <a href="cart.php?remove=<?= $pid ?>" class="btn-remove" title="Remove item"
                        onclick="return confirm('Remove this item from cart?')">
@@ -399,8 +416,7 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
                         <span class="amount" id="grandTotal">LKR <?= number_format($total, 0) ?></span>
                     </div>
 
-                    <a href="checkout.php" class="btn-checkout"
-                        onclick="return confirm('Proceed to checkout?');">
+                    <a href="checkout.php" class="btn-checkout">
                         <i class="fa-solid fa-lock"></i> Proceed to Checkout
                     </a>
                     <a href="home.php" class="btn-continue">

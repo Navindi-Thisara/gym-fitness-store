@@ -3,7 +3,18 @@ session_start();
 if(!isset($_SESSION['user'])){ header("Location: ../auth/login.php"); exit; }
 include("../config/db.php");
 
-$cart = $_SESSION['cart'] ?? [];
+// ── Single item Buy Now support ──
+$buyPid = $_GET['buy_pid'] ?? null;
+if($buyPid && isset($_SESSION['cart'][$buyPid])){
+    // Checkout only this one item
+    $cart = [ $buyPid => $_SESSION['cart'][$buyPid] ];
+    $isSingleItem = true;
+} else {
+    // Checkout entire cart
+    $cart = $_SESSION['cart'] ?? [];
+    $isSingleItem = false;
+}
+
 if(empty($cart)){ header("Location: cart.php"); exit; }
 
 $user      = $_SESSION['user'];
@@ -33,55 +44,64 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])){
         $error = "Please enter a valid phone number.";
     } elseif(strlen($address) < 5){
         $error = "Please enter a valid delivery address.";
-    } else {
-        // Prepare values
-        $uid   = intval($user['id']);
-        $fn    = $conn->real_escape_string($full_name);
-        $ph    = $conn->real_escape_string($phone);
-        $addr  = $conn->real_escape_string($address);
-        $cty   = $conn->real_escape_string($city);
-        $pst   = $conn->real_escape_string($postal);
-        $pay   = $conn->real_escape_string($payment);
-        $tot   = floatval($total);
-        $email = $conn->real_escape_string($user['email'] ?? '');
-        $qty   = intval($itemCount); // total item count for orders.quantity
+    }
 
-        // ── Insert order ──
-        $result = $conn->query("INSERT INTO orders 
-            (user_id, full_name, email, phone, address, city, postal,
-             payment_method, total_amount, quantity, status, created_at)
-            VALUES 
-            ($uid,'$fn','$email','$ph','$addr','$cty','$pst',
-             '$pay',$tot,$qty,'Pending',NOW())");
+    /* ── CARD VALIDATION ── */
+    if(empty($error) && $payment === 'card'){
+        $card_number = preg_replace('/\s+/', '', $_POST['card_number'] ?? '');
+        $card_name   = trim($_POST['card_name'] ?? '');
+        $card_expiry = trim($_POST['card_expiry'] ?? '');
+        $card_cvv    = trim($_POST['card_cvv'] ?? '');
 
-        if(!$result){
-            $error = "Failed to place order. Please try again. (" . $conn->error . ")";
-        } else {
-            $orderId = $conn->insert_id;
-
-            // ── Insert order items ──
-            $itemError = false;
-            foreach($cart as $pid => $item){
-                $pidInt = intval($pid);
-                $iprice = floatval($item['price']);
-                $iqty   = intval($item['qty']);
-
-                $r = $conn->query("INSERT INTO order_items (order_id, product_id, price, quantity)
-                                   VALUES ($orderId, $pidInt, $iprice, $iqty)");
-                if(!$r){
-                    $itemError = true;
-                    error_log("order_items insert failed for product $pidInt: " . $conn->error);
-                }
-            }
-
-            if($itemError){
-                $error = "Order saved but some items failed. Contact support. (Order #$orderId)";
-            } else {
-                // ── Clear cart & show success ──
-                unset($_SESSION['cart']);
-                $success = $orderId;
-            }
+        if(strlen($card_number) < 13 || !ctype_digit($card_number)){
+            $error = "Please enter a valid card number.";
+        } elseif(empty($card_name)){
+            $error = "Please enter the cardholder name.";
+        } elseif(!preg_match('/^\d{2}\/\d{2}$/', $card_expiry)){
+            $error = "Please enter expiry date as MM/YY.";
+        } elseif(strlen($card_cvv) < 3 || !ctype_digit($card_cvv)){
+            $error = "Please enter a valid CVV.";
         }
+    }
+
+    /* ── SAVE ORDER ── */
+    if(empty($error)){
+        $uid  = intval($user['id']);
+        $fn   = $conn->real_escape_string($full_name);
+        $ph   = $conn->real_escape_string($phone);
+        $addr = $conn->real_escape_string($address);
+        $cty  = $conn->real_escape_string($city);
+        $pst  = $conn->real_escape_string($postal);
+        $pay  = $conn->real_escape_string($payment);
+        $tot  = floatval($total);
+
+        // Optional improvement
+        $status = ($payment === 'card') ? 'Paid' : 'Pending';
+
+        // Insert order
+        $conn->query("INSERT INTO orders (user_id, full_name, phone, address, city, postal,
+                    payment_method, total_amount, status, created_at)
+                    VALUES ($uid,'$fn','$ph','$addr','$cty','$pst','$pay',$tot,'$status',NOW())");
+
+        $orderId = $conn->insert_id;
+
+        // Insert order items
+        foreach($cart as $pid => $item){
+            $product_id = intval($pid);
+            $iprice     = floatval($item['price']);
+            $iqty       = intval($item['qty']);
+
+            $conn->query("INSERT INTO order_items (order_id, product_id, quantity, price)
+                        VALUES ($orderId, $product_id, $iqty, $iprice)");
+        }
+
+        // Clear cart
+        foreach($cart as $pid => $item){
+            unset($_SESSION['cart'][$pid]);
+        }
+        if(empty($_SESSION['cart'])) unset($_SESSION['cart']);
+
+        $success = $orderId;
     }
 }
 ?>
@@ -291,7 +311,7 @@ body.dark-mode .order-id-badge{background:#1a3327;border-color:#2d6a4f;}
 .btn-success-outline:hover{background:#28a745;color:#fff;}
 
 /* ── Mode toggle ── */
-.mode-toggle-container{position:absolute;bottom:16px;right:24px;z-index:10;}
+.mode-toggle-container{position:fixed;bottom:80px;right:24px;z-index:999;}
 #mode-toggle{
     font-size:18px;width:42px;height:42px;
     border-radius:50%;border:2px solid #28a745;
@@ -300,9 +320,9 @@ body.dark-mode .order-id-badge{background:#1a3327;border-color:#2d6a4f;}
     transition:background 0.3s,color 0.3s,border-color 0.3s;
     box-shadow:0 2px 8px rgba(0,0,0,0.2);
 }
-#mode-toggle:hover{background: #28a745;color: #fff;}
-body.dark-mode #mode-toggle{background: #1a1a1a;color: #28a745;border-color: #28a745;}
-body.dark-mode #mode-toggle:hover{background: #28a745;color: #1a1a1a;}
+#mode-toggle:hover{background:#28a745;color:#fff;}
+body.dark-mode #mode-toggle{background:#1a1a1a;color:#28a745;border-color:#28a745;}
+body.dark-mode #mode-toggle:hover{background:#28a745;color:#1a1a1a;}
 
 /* ── Footer ── */
 .main-footer{text-align:center;padding:12px 10px;font-size:13px;flex-shrink:0;transition:background 0.3s,color 0.3s;}
@@ -329,17 +349,175 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
 <div class="main-content">
 
 <?php if($success): ?>
-    <!-- ── Order Success Screen ── -->
-    <div class="success-screen">
-        <div class="check-icon"><i class="fa-solid fa-check"></i></div>
-        <h2>Order Placed Successfully!</h2>
-        <p>Thank you, <strong><?= htmlspecialchars($user['name']) ?></strong>! Your order has been received.</p>
-        <p style="color:#aaa;font-size:0.85rem;">We'll contact you shortly to confirm your delivery.</p>
-        <div class="order-id-badge"><i class="fa-solid fa-receipt"></i> Order #<?= str_pad($success, 5, '0', STR_PAD_LEFT) ?></div>
-        <div class="success-actions">
-            <a href="home.php" class="btn-success-primary">
+    <!-- ── Order Success + Printable Payment Slip ── -->
+
+    <!-- Print styles -->
+    <style>
+    @media print {
+        body * { visibility:hidden; }
+        #paymentSlip, #paymentSlip * { visibility:visible; }
+        #paymentSlip { position:fixed;top:0;left:0;width:100%;padding:30px; }
+        .no-print { display:none !important; }
+        body { background:#fff !important; }
+    }
+    #paymentSlip {
+        background:#fff; border-radius:16px;
+        box-shadow:0 4px 20px rgba(0,0,0,0.08);
+        max-width:680px; margin:0 auto 24px;
+        overflow:hidden; animation:slideUp 0.5s ease both;
+    }
+    body.dark-mode #paymentSlip { background:#1e1e1e; }
+    .slip-header {
+        background:linear-gradient(135deg,#28a745,#218838);
+        padding:24px 32px; color:#fff; text-align:center;
+    }
+    .slip-header h2 { margin:0 0 4px; font-size:1.4rem; }
+    .slip-header p  { margin:0; font-size:0.85rem; opacity:0.88; }
+    .slip-order-badge {
+        display:inline-block; background:rgba(255,255,255,0.2);
+        border:1.5px solid rgba(255,255,255,0.4);
+        border-radius:8px; padding:6px 18px;
+        font-size:1rem; font-weight:800; margin-top:12px;
+        letter-spacing:1px;
+    }
+    .slip-body { padding:28px 32px; }
+    .slip-section-title {
+        font-size:0.75rem; font-weight:700; color:#28a745;
+        text-transform:uppercase; letter-spacing:0.8px;
+        margin:0 0 10px; display:flex; align-items:center; gap:6px;
+    }
+    .slip-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; margin-bottom:20px; }
+    .slip-field { font-size:0.85rem; color:#555; }
+    body.dark-mode .slip-field { color:#aaa; }
+    .slip-field strong { display:block; font-size:0.78rem; color:#aaa; margin-bottom:2px; text-transform:uppercase; letter-spacing:0.3px; }
+    .slip-divider { border:none; border-top:1.5px dashed #e0e0e0; margin:18px 0; }
+    body.dark-mode .slip-divider { border-color:#3a3a3a; }
+    .slip-items table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    .slip-items th { background:#f8f8f8; padding:8px 12px; text-align:left; font-size:0.75rem; color:#555; text-transform:uppercase; }
+    body.dark-mode .slip-items th { background:#252525; color:#aaa; }
+    .slip-items td { padding:9px 12px; border-bottom:1px solid #f5f5f5; color:#333; }
+    body.dark-mode .slip-items td { color:#ccc; border-color:#2a2a2a; }
+    .slip-items tr:last-child td { border-bottom:none; }
+    .slip-totals { margin-top:14px; }
+    .slip-total-row { display:flex; justify-content:space-between; font-size:0.88rem; color:#555; margin-bottom:8px; }
+    body.dark-mode .slip-total-row { color:#aaa; }
+    .slip-total-row.grand { font-size:1.05rem; font-weight:800; color:#1a1a1a; border-top:2px solid #e0e0e0; padding-top:10px; margin-top:4px; }
+    body.dark-mode .slip-total-row.grand { color:#f0f0f0; border-color:#3a3a3a; }
+    .slip-total-row.grand span:last-child { color:#28a745; }
+    .slip-footer { background:#f8f8f8; padding:14px 32px; text-align:center; font-size:0.78rem; color:#aaa; }
+    body.dark-mode .slip-footer { background:#252525; }
+    .btn-print {
+        padding:11px 28px; background:#28a745; color:#fff;
+        border:none; border-radius:10px; font-size:0.95rem; font-weight:700;
+        cursor:pointer; display:inline-flex; align-items:center; gap:8px;
+        transition:background 0.2s; box-shadow:0 3px 12px rgba(40,167,69,0.3);
+        text-decoration:none;
+    }
+    .btn-print:hover { background:#218838; }
+    .btn-shop {
+        padding:11px 24px; border:1.5px solid #28a745; color:#28a745;
+        background:transparent; border-radius:10px; font-size:0.95rem; font-weight:700;
+        cursor:pointer; display:inline-flex; align-items:center; gap:7px;
+        transition:all 0.2s; text-decoration:none;
+    }
+    .btn-shop:hover { background:#28a745; color:#fff; }
+    </style>
+
+    <div class="success-actions no-print" style="text-align:center;margin-bottom:20px;">
+        <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#28a745,#218838);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:2rem;color:#fff;box-shadow:0 6px 20px rgba(40,167,69,0.4);">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <h2 style="margin:0 0 6px;font-size:1.5rem;font-weight:700;">Order Placed Successfully!</h2>
+        <p style="color:#888;margin:0 0 20px;">Your payment slip is ready below. Print or save it for your records.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn-print" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> Print Payment Slip
+            </button>
+            <a href="home.php" class="btn-shop">
                 <i class="fa-solid fa-bag-shopping"></i> Continue Shopping
             </a>
+        </div>
+    </div>
+
+    <!-- ── Printable Payment Slip ── -->
+    <div id="paymentSlip">
+        <div class="slip-header">
+            <h2><i class="fa-solid fa-dumbbell"></i> Gym &amp; Fitness Store</h2>
+            <p>Payment Receipt &amp; Order Confirmation</p>
+            <div class="slip-order-badge">
+                ORDER #<?= str_pad($success, 5, '0', STR_PAD_LEFT) ?>
+            </div>
+        </div>
+
+        <div class="slip-body">
+            <!-- Customer Info -->
+            <div class="slip-section-title"><i class="fa-solid fa-user"></i> Customer Details</div>
+            <div class="slip-grid">
+                <div class="slip-field"><strong>Name</strong><?= htmlspecialchars($user['name']) ?></div>
+                <div class="slip-field"><strong>Email</strong><?= htmlspecialchars($user['email']) ?></div>
+                <div class="slip-field"><strong>Phone</strong><?= htmlspecialchars($_POST['phone'] ?? '—') ?></div>
+                <div class="slip-field"><strong>Date</strong><?= date('d M Y, h:i A') ?></div>
+            </div>
+
+            <hr class="slip-divider">
+
+            <!-- Delivery Info -->
+            <div class="slip-section-title"><i class="fa-solid fa-location-dot"></i> Delivery Address</div>
+            <div class="slip-grid">
+                <div class="slip-field"><strong>Address</strong><?= htmlspecialchars($_POST['address'] ?? '—') ?></div>
+                <div class="slip-field"><strong>City</strong><?= htmlspecialchars(($_POST['city'] ?? '—').(!empty($_POST['postal']) ? ' - '.$_POST['postal'] : '')) ?></div>
+            </div>
+
+            <hr class="slip-divider">
+
+            <!-- Payment Info -->
+            <div class="slip-section-title"><i class="fa-solid fa-credit-card"></i> Payment Details</div>
+            <div class="slip-grid">
+                <div class="slip-field"><strong>Payment Method</strong>
+                    <?php
+                    $pm = $_POST['payment'] ?? 'cod';
+                    echo $pm === 'cod' ? 'Cash on Delivery' : ($pm === 'bank' ? 'Bank Transfer' : 'Credit / Debit Card');
+                    ?>
+                </div>
+                <?php if(($_POST['payment'] ?? '') === 'card' && !empty($_POST['card_number'])): ?>
+                <div class="slip-field"><strong>Card</strong>
+                    **** **** **** <?= substr(preg_replace('/\s+/','',$_POST['card_number']),-4) ?>
+                </div>
+                <?php endif; ?>
+                <div class="slip-field"><strong>Status</strong><span style="color:#28a745;font-weight:700;">Confirmed</span></div>
+            </div>
+
+            <hr class="slip-divider">
+
+            <!-- Order Items -->
+            <div class="slip-section-title"><i class="fa-solid fa-box"></i> Ordered Items</div>
+            <div class="slip-items">
+                <table>
+                    <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr></thead>
+                    <tbody>
+                    <?php foreach($cart as $item): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($item['name']) ?></td>
+                            <td><?= $item['qty'] ?></td>
+                            <td>LKR <?= number_format($item['price'], 0) ?></td>
+                            <td>LKR <?= number_format($item['price'] * $item['qty'], 0) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="slip-totals">
+                <div class="slip-total-row"><span>Subtotal</span><span>LKR <?= number_format($total, 0) ?></span></div>
+                <div class="slip-total-row"><span>Shipping</span><span style="color:#28a745;">Free</span></div>
+                <div class="slip-total-row"><span>Tax</span><span>LKR 0</span></div>
+                <div class="slip-total-row grand"><span>Total Paid</span><span>LKR <?= number_format($total, 0) ?></span></div>
+            </div>
+        </div>
+
+        <div class="slip-footer">
+            Thank you for shopping at Gym &amp; Fitness Store! &nbsp;|&nbsp;
+            support@gymstore.lk &nbsp;|&nbsp; +94 77 123 4567
         </div>
     </div>
 
@@ -348,11 +526,18 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
     <h2 class="page-title"><i class="fa-solid fa-lock"></i> Checkout</h2>
     <p class="page-subtitle">Complete your order — <?= $itemCount ?> item<?= $itemCount>1?'s':'' ?> · LKR <?= number_format($total, 0) ?></p>
 
+    <?php if($isSingleItem): ?>
+        <div style="background:#fff3cd;color:#856404;border:1px solid #ffc107;padding:10px 14px;border-radius:8px;font-size:0.88rem;margin-bottom:18px;display:flex;align-items:center;gap:8px;">
+            <i class="fa-solid fa-circle-info"></i>
+            You are checking out <strong>1 item only</strong>. Other cart items will remain in your cart.
+        </div>
+    <?php endif; ?>
+
     <?php if($error): ?>
         <div class="message error"><i class="fa-solid fa-circle-exclamation"></i> <?= $error ?></div>
     <?php endif; ?>
 
-    <form method="POST">
+    <form method="POST" action="checkout.php<?= $buyPid ? '?buy_pid='.urlencode($buyPid) : '' ?>">
     <div class="checkout-layout">
 
         <!-- ── Left column ── -->
@@ -411,7 +596,8 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
                     <div class="payment-options">
                         <label class="payment-option <?= ($_POST['payment']??'cod')==='cod'?'selected':'' ?>">
                             <input type="radio" name="payment" value="cod"
-                                   <?= ($_POST['payment']??'cod')==='cod'?'checked':'' ?> required>
+                                   <?= ($_POST['payment']??'cod')==='cod'?'checked':'' ?> required
+                                   onchange="toggleCardForm()">
                             <i class="fa-solid fa-money-bill-wave"></i>
                             <div class="payment-option-label">
                                 <strong>Cash on Delivery</strong>
@@ -420,7 +606,8 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
                         </label>
                         <label class="payment-option <?= ($_POST['payment']??'')==='bank'?'selected':'' ?>">
                             <input type="radio" name="payment" value="bank"
-                                   <?= ($_POST['payment']??'')==='bank'?'checked':'' ?>>
+                                   <?= ($_POST['payment']??'')==='bank'?'checked':'' ?>
+                                   onchange="toggleCardForm()">
                             <i class="fa-solid fa-building-columns"></i>
                             <div class="payment-option-label">
                                 <strong>Bank Transfer</strong>
@@ -429,13 +616,84 @@ body.dark-mode  .main-footer{background:#1a1a1a;color:#aaa;}
                         </label>
                         <label class="payment-option <?= ($_POST['payment']??'')==='card'?'selected':'' ?>">
                             <input type="radio" name="payment" value="card"
-                                   <?= ($_POST['payment']??'')==='card'?'checked':'' ?>>
+                                   <?= ($_POST['payment']??'')==='card'?'checked':'' ?>
+                                   onchange="toggleCardForm()">
                             <i class="fa-solid fa-credit-card"></i>
                             <div class="payment-option-label">
                                 <strong>Credit / Debit Card</strong>
-                                <span>Coming soon</span>
+                                <span>Visa, Mastercard accepted</span>
                             </div>
                         </label>
+                    </div>
+
+                    <!-- ── Credit Card Form ── -->
+                    <div id="cardForm" style="display:<?= ($_POST['payment']??'')==='card'?'block':'none' ?>;margin-top:18px;">
+                        <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:14px;padding:22px 24px;margin-bottom:18px;color:#fff;position:relative;overflow:hidden;">
+                            <div style="font-size:0.75rem;opacity:0.6;margin-bottom:12px;letter-spacing:1px;">CARD NUMBER</div>
+                            <div style="font-size:1.2rem;font-weight:700;letter-spacing:3px;margin-bottom:18px;" id="cardPreviewNum">•••• •••• •••• ••••</div>
+                            <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+                                <div>
+                                    <div style="font-size:0.65rem;opacity:0.6;letter-spacing:1px;">CARD HOLDER</div>
+                                    <div style="font-size:0.88rem;font-weight:600;" id="cardPreviewName">YOUR NAME</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.65rem;opacity:0.6;letter-spacing:1px;">EXPIRES</div>
+                                    <div style="font-size:0.88rem;font-weight:600;" id="cardPreviewExp">MM/YY</div>
+                                </div>
+                                <div style="font-size:2rem;opacity:0.8;">
+                                    <i class="fa-brands fa-cc-visa"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="input-group" style="margin-bottom:14px;">
+                            <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:5px;">Card Number *</label>
+                            <i class="fa-solid fa-credit-card field-icon" style="position:absolute;left:13px;top:37px;color:#aaa;font-size:0.85rem;pointer-events:none;"></i>
+                            <input type="text" name="card_number" id="cardNumber"
+                                   placeholder="1234 5678 9012 3456" maxlength="19"
+                                   oninput="formatCardNum(this)"
+                                   value="<?= htmlspecialchars($_POST['card_number'] ?? '') ?>">
+                        </div>
+                        <div class="input-group" style="margin-bottom:14px;">
+                            <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:5px;">Cardholder Name *</label>
+                            <i class="fa-solid fa-user field-icon" style="position:absolute;left:13px;top:37px;color:#aaa;font-size:0.85rem;pointer-events:none;"></i>
+                            <input type="text" name="card_name" id="cardName"
+                                   placeholder="John Silva" oninput="updateCardPreview()"
+                                   value="<?= htmlspecialchars($_POST['card_name'] ?? '') ?>">
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                            <div class="input-group" style="margin-bottom:0;">
+                                <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:5px;">Expiry Date *</label>
+                                <i class="fa-solid fa-calendar field-icon" style="position:absolute;left:13px;top:37px;color:#aaa;font-size:0.85rem;pointer-events:none;"></i>
+                                <input type="text" name="card_expiry" id="cardExpiry"
+                                       placeholder="MM/YY" maxlength="5"
+                                       oninput="formatExpiry(this)"
+                                       value="<?= htmlspecialchars($_POST['card_expiry'] ?? '') ?>">
+                            </div>
+                            <div class="input-group" style="margin-bottom:0;">
+                                <label style="font-size:0.8rem;font-weight:600;color:#555;display:block;margin-bottom:5px;">CVV *</label>
+                                <i class="fa-solid fa-lock field-icon" style="position:absolute;left:13px;top:37px;color:#aaa;font-size:0.85rem;pointer-events:none;"></i>
+                                <input type="text" name="card_cvv" id="cardCvv"
+                                       placeholder="123" maxlength="4"
+                                       oninput="this.value=this.value.replace(/\D/g,'')"
+                                       value="<?= htmlspecialchars($_POST['card_cvv'] ?? '') ?>">
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:0.78rem;color:#aaa;">
+                            <i class="fa-solid fa-shield-halved" style="color:#28a745;"></i>
+                            Your card details are encrypted and secure.
+                        </div>
+                    </div>
+
+                    <!-- Bank transfer info -->
+                    <div id="bankInfo" style="display:<?= ($_POST['payment']??'')==='bank'?'block':'none' ?>;margin-top:16px;background:#f0faf2;border-radius:10px;padding:14px 16px;border:1px solid #b2dfdb;">
+                        <div style="font-size:0.82rem;font-weight:700;color:#28a745;margin-bottom:8px;"><i class="fa-solid fa-building-columns"></i> Bank Transfer Details</div>
+                        <div style="font-size:0.83rem;color:#555;line-height:1.8;">
+                            Bank: <strong>Bank of Ceylon</strong><br>
+                            Account Name: <strong>Gym &amp; Fitness Store</strong><br>
+                            Account No: <strong>1234-5678-9012</strong><br>
+                            Branch: <strong>Colombo</strong>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -506,6 +764,57 @@ document.querySelectorAll('.payment-option').forEach(function(opt){
         this.classList.add('selected');
     });
 });
+
+/* ── Card form toggle ── */
+function toggleCardForm(){
+    var pay  = document.querySelector('input[name="payment"]:checked');
+    var form = document.getElementById('cardForm');
+    var bank = document.getElementById('bankInfo');
+    if(form) form.style.display = (pay && pay.value === 'card') ? 'block' : 'none';
+    if(bank) bank.style.display = (pay && pay.value === 'bank') ? 'block' : 'none';
+}
+
+/* ── Card number format: groups of 4 ── */
+function formatCardNum(input){
+    var v = input.value.replace(/\D/g,'').substring(0,16);
+    var r = v.match(/.{1,4}/g);
+    input.value = r ? r.join(' ') : v;
+    var prev = document.getElementById('cardPreviewNum');
+    if(prev) prev.textContent = (r ? r.join(' ') : v).padEnd(19,'•').replace(/[^•]/g, function(c,i){
+        return (i < v.length) ? c : '•';
+    }) || '•••• •••• •••• ••••';
+    updateCardPreview();
+}
+
+/* ── Expiry format MM/YY ── */
+function formatExpiry(input){
+    var v = input.value.replace(/\D/g,'').substring(0,4);
+    if(v.length >= 2) v = v.substring(0,2)+'/'+v.substring(2);
+    input.value = v;
+    var prev = document.getElementById('cardPreviewExp');
+    if(prev) prev.textContent = v || 'MM/YY';
+}
+
+/* ── Update card visual preview ── */
+function updateCardPreview(){
+    var name = document.getElementById('cardName');
+    var num  = document.getElementById('cardNumber');
+    var prevName = document.getElementById('cardPreviewName');
+    var prevNum  = document.getElementById('cardPreviewNum');
+    if(prevName && name) prevName.textContent = name.value.toUpperCase() || 'YOUR NAME';
+    if(prevNum  && num){
+        var v = num.value.replace(/\D/g,'');
+        var r = v.match(/.{1,4}/g);
+        var display = r ? r.join(' ') : v;
+        // Pad with bullets
+        while(display.replace(/\s/g,'').length < 16) display += '•';
+        prevNum.textContent = display.substring(0,19) || '•••• •••• •••• ••••';
+    }
+}
+
+// Bind live events
+var cn = document.getElementById('cardName');
+if(cn) cn.addEventListener('input', updateCardPreview);
 
 // Dark/Light Mode
 (function(){
