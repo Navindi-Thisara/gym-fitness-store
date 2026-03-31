@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Generation Time: Mar 31, 2026 at 04:10 PM
+-- Generation Time: Mar 31, 2026 at 05:23 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -191,14 +191,14 @@ INSERT INTO `products` (`id`, `name`, `category`, `brand`, `price`, `quantity`, 
 (8, 'Mass Gainer 3kg', 'Supplements', NULL, 18000.00, 50, NULL, 'massgainer.png', 'New', 'fa-weight-scale'),
 (9, 'Vitamin C 1000mg', 'Supplements', NULL, 2900.00, 50, NULL, 'vitaminc.png', '', 'fa-tablets'),
 (10, 'Adjustable Dumbbells', 'Equipment', NULL, 42500.00, 50, NULL, 'dumbbells.png', 'Top Pick', 'fa-dumbbell'),
-(11, 'Pull-Up Bar', 'Equipment', NULL, 13000.00, -1, NULL, 'pullupbar.png', 'Popular', 'fa-arrow-up'),
+(11, 'Pull-Up Bar', 'Equipment', NULL, 13000.00, 50, NULL, 'pullupbar.png', 'Popular', 'fa-arrow-up'),
 (12, 'Resistance Bands Set', 'Equipment', NULL, 6200.00, 50, NULL, 'bands.png', '', 'fa-circle-nodes'),
 (13, 'Foam Roller', 'Equipment', NULL, 7500.00, 50, NULL, 'foamroller.png', '', 'fa-circle'),
 (14, 'Yoga Mat Pro', 'Accessories', NULL, 9200.00, 50, NULL, 'yogamat.png', '', 'fa-person'),
 (15, 'Gym Gloves', 'Accessories', NULL, 4900.00, 50, NULL, 'gloves.png', '', 'fa-hand'),
 (16, 'Shaker Bottle 700ml', 'Accessories', NULL, 3200.00, 50, NULL, 'shaker.png', '', 'fa-bottle-water'),
 (17, 'Gym Bag 35L', 'Accessories', NULL, 8800.00, 50, NULL, 'gymbag.png', 'New', 'fa-bag-shopping'),
-(18, 'Knee Sleeves (Pair)', 'Accessories', NULL, 5600.00, 50, NULL, 'kneesleeves.png', '', 'fa-person-running'),
+(18, 'Knee Sleeves (Pair)', 'Accessories', NULL, 5600.00, 0, NULL, 'kneesleeves.png', '', 'fa-person-running'),
 (19, 'Lifting Belt', 'Accessories', NULL, 7200.00, 50, NULL, 'liftingbelt.png', 'Popular', 'fa-circle-dot');
 
 -- --------------------------------------------------------

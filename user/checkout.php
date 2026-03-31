@@ -74,17 +74,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])){
         $pst  = $conn->real_escape_string($postal);
         $pay  = $conn->real_escape_string($payment);
         $tot  = floatval($total);
-
-        // Optional improvement
         $status = ($payment === 'card') ? 'Paid' : 'Pending';
 
-        // ── Stock validation ──
+        // ── Stock validation (MUST happen before any INSERT) ──
         foreach($cart as $pid => $item){
             $product_id = intval($pid);
             $iqty       = intval($item['qty']);
-
-            $result = $conn->query("SELECT quantity, name FROM products WHERE id = $product_id");
-            $product = $result->fetch_assoc();
+            $result     = $conn->query("SELECT quantity, name FROM products WHERE id = $product_id");
+            $product    = $result->fetch_assoc();
 
             if(!$product || $product['quantity'] < $iqty){
                 $pname = htmlspecialchars($product['name'] ?? 'A product');
@@ -93,33 +90,44 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])){
             }
         }
 
-        // Insert order
-        $conn->query("INSERT INTO orders (user_id, full_name, phone, address, city, postal,
-                    payment_method, total_amount, status, created_at)
-                    VALUES ($uid,'$fn','$ph','$addr','$cty','$pst','$pay',$tot,'$status',NOW())");
+        // ── Only proceed if stock check passed ──
+        if(empty($error)){
+            $conn->begin_transaction();
+            try {
+                // Insert order
+                $conn->query("INSERT INTO orders (user_id, full_name, phone, address, city, postal,
+                            payment_method, total_amount, status, created_at)
+                            VALUES ($uid,'$fn','$ph','$addr','$cty','$pst','$pay',$tot,'$status',NOW())");
+                $orderId = $conn->insert_id;
 
-        $orderId = $conn->insert_id;
+                // Insert items + decrement stock
+                foreach($cart as $pid => $item){
+                    $product_id = intval($pid);
+                    $iprice     = floatval($item['price']);
+                    $iqty       = intval($item['qty']);
 
-        // Insert order items
-        foreach($cart as $pid => $item){
-            $product_id = intval($pid);
-            $iprice     = floatval($item['price']);
-            $iqty       = intval($item['qty']);
+                    $conn->query("INSERT INTO order_items (order_id, product_id, quantity, price)
+                                VALUES ($orderId, $product_id, $iqty, $iprice)");
 
-            $conn->query("INSERT INTO order_items (order_id, product_id, quantity, price)
-                        VALUES ($orderId, $product_id, $iqty, $iprice)");
+                    // Decrement — with a floor of 0 to prevent negative stock
+                    $conn->query("UPDATE products 
+                                SET quantity = GREATEST(0, quantity - $iqty) 
+                                WHERE id = $product_id");
+                }
 
-            // Decrement product stock
-            $conn->query("UPDATE products SET quantity = quantity - $iqty WHERE id = $product_id");
+                $conn->commit();
+
+                // Clear cart
+                foreach($cart as $pid => $item) unset($_SESSION['cart'][$pid]);
+                if(empty($_SESSION['cart'])) unset($_SESSION['cart']);
+
+                $success = $orderId;
+
+            } catch(Exception $e){
+                $conn->rollback();
+                $error = "Order failed due to a server error. Please try again.";
+            }
         }
-
-        // Clear cart
-        foreach($cart as $pid => $item){
-            unset($_SESSION['cart'][$pid]);
-        }
-        if(empty($_SESSION['cart'])) unset($_SESSION['cart']);
-
-        $success = $orderId;
     }
 }
 ?>
