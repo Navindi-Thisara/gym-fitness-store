@@ -78,6 +78,21 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])){
         // Optional improvement
         $status = ($payment === 'card') ? 'Paid' : 'Pending';
 
+        // ── Stock validation ──
+        foreach($cart as $pid => $item){
+            $product_id = intval($pid);
+            $iqty       = intval($item['qty']);
+
+            $result = $conn->query("SELECT quantity, name FROM products WHERE id = $product_id");
+            $product = $result->fetch_assoc();
+
+            if(!$product || $product['quantity'] < $iqty){
+                $pname = htmlspecialchars($product['name'] ?? 'A product');
+                $error = "$pname is out of stock or has insufficient quantity.";
+                break;
+            }
+        }
+
         // Insert order
         $conn->query("INSERT INTO orders (user_id, full_name, phone, address, city, postal,
                     payment_method, total_amount, status, created_at)
@@ -93,6 +108,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['place_order'])){
 
             $conn->query("INSERT INTO order_items (order_id, product_id, quantity, price)
                         VALUES ($orderId, $product_id, $iqty, $iprice)");
+
+            // Decrement product stock
+            $conn->query("UPDATE products SET quantity = quantity - $iqty WHERE id = $product_id");
         }
 
         // Clear cart

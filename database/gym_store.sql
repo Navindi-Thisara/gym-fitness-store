@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Generation Time: Mar 29, 2026 at 09:07 AM
+-- Generation Time: Mar 31, 2026 at 04:10 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -92,7 +92,19 @@ INSERT INTO `orders` (`id`, `user_id`, `quantity`, `status`, `created_at`, `full
 (19, 2, 2, 'Pending', '2026-03-27 12:23:58', 'Navindi Thisara', 'navindithisara214@gmail.com', 'No.02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'card', 26200.00),
 (20, 2, 1, 'Pending', '2026-03-27 12:26:53', 'Navindi Thisara', 'navindithisara214@gmail.com', 'No. 02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'cod', 3200.00),
 (21, 2, 1, 'Pending', '2026-03-27 12:28:58', 'Navindi Thisara', 'navindithisara214@gmail.com', 'No. 02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'bank', 2900.00),
-(22, 2, 1, 'Completed', '2026-03-27 12:34:55', 'Navindi Thisara', 'navindithisara214@gmail.com', 'No.02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'cod', 16500.00);
+(22, 2, 1, 'Completed', '2026-03-27 12:34:55', 'Navindi Thisara', 'navindithisara214@gmail.com', 'No.02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'cod', 16500.00),
+(23, 2, 0, 'Pending', '2026-03-30 02:36:16', '', '', '', '', '', '', '', 19600.00),
+(24, 2, 0, 'Pending', '2026-03-30 02:36:17', '', '', '', '', '', '', '', 19600.00),
+(25, 2, 0, 'Pending', '2026-03-30 02:47:32', 'Navindi Thisara', '', 'No.02, Wadumulla, Wathugedara.', '+94 76 745 5755', 'Ambalangoda', '80300', 'cod', 3200.00),
+(26, 2, 0, 'Pending', '2026-03-30 02:51:30', 'Navindi Thisara', '', 'No.02, Wadumulla, Wathugedara.', '+94 76 745 5755', 'Ambalangoda', '80300', 'cod', 3200.00),
+(27, 2, 0, 'Pending', '2026-03-30 02:55:07', 'Navindi Thisara', '', 'No.02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'bank', 18000.00),
+(28, 2, 0, 'Pending', '2026-03-30 03:03:10', 'Navindi Thisara', '', 'No.02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'bank', 8200.00),
+(29, 2, 0, 'Paid', '2026-03-30 03:10:50', 'Navindi Thisara', '', 'No. 02, Wadumulla, Wathugedara', '+94 76 734 5755', 'Ambalangoda', '80300', 'card', 8800.00),
+(30, 2, 0, 'Pending', '2026-03-30 03:17:40', 'Navindi Thisara', '', 'No.02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'cod', 8200.00),
+(31, 2, 0, 'Pending', '2026-03-30 03:17:56', 'Navindi Thisara', '', 'No.02, Wadumulla, Wathugedara.', '+94 76 734 5755', 'Ambalangoda', '80300', 'bank', 11400.00),
+(32, 5, 0, 'Paid', '2026-03-31 04:52:49', 'Samir Shakya', '', 'No.03, Colombo', '+94 75 145 5715', 'Colombo', '76600', 'card', 8200.00),
+(33, 2, 0, 'Pending', '2026-03-31 14:03:32', 'Navindi Thisara', '', 'No.02, Wadumulla, Wathugedara', '+76 734  5755', 'Ambalangoda', '80300', 'cod', 8200.00),
+(34, 2, 0, 'Pending', '2026-03-31 14:07:54', 'Navindi Thisara', '', 'No.02, Wadumulla, Wathugedara', '+94 76 734 5755', 'Ambalangoda', '80300', 'cod', 13000.00);
 
 -- --------------------------------------------------------
 
@@ -117,7 +129,16 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`) 
 (7, 19, 8, 1, 18000.00),
 (8, 20, 16, 1, 3200.00),
 (9, 21, 9, 1, 2900.00),
-(10, 22, 4, 1, 16500.00);
+(10, 22, 4, 1, 16500.00),
+(11, 26, 16, 1, 3200.00),
+(12, 27, 8, 1, 18000.00),
+(13, 28, 5, 1, 8200.00),
+(14, 29, 17, 1, 8800.00),
+(15, 30, 5, 1, 8200.00),
+(16, 31, 6, 1, 11400.00),
+(17, 32, 5, 1, 8200.00),
+(18, 33, 5, 1, 8200.00),
+(19, 34, 11, 1, 13000.00);
 
 -- --------------------------------------------------------
 
@@ -163,22 +184,22 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `category`, `brand`, `price`, `quantity`, `description`, `image`, `badge`, `icon`) VALUES
-(4, 'Whey Protein 2kg', 'Supplements', NULL, 16500.00, 0, NULL, 'whey.jpg', 'Best Seller', 'fa-jar'),
-(5, 'Creatine Monohydrate', 'Supplements', NULL, 8200.00, 0, NULL, 'creatine.png', 'Popular', 'fa-flask'),
-(6, 'Pre-Workout Powder', 'Supplements', NULL, 11400.00, 0, NULL, 'preworkout.png', 'New', 'fa-bolt'),
-(7, 'BCAA Capsules 60s', 'Supplements', NULL, 6500.00, 0, NULL, 'bcaa.jpg', '', 'fa-capsules'),
-(8, 'Mass Gainer 3kg', 'Supplements', NULL, 18000.00, 0, NULL, 'massgainer.png', 'New', 'fa-weight-scale'),
-(9, 'Vitamin C 1000mg', 'Supplements', NULL, 2900.00, 0, NULL, 'vitaminc.png', '', 'fa-tablets'),
-(10, 'Adjustable Dumbbells', 'Equipment', NULL, 42500.00, 0, NULL, 'dumbbells.png', 'Top Pick', 'fa-dumbbell'),
-(11, 'Pull-Up Bar', 'Equipment', NULL, 13000.00, 0, NULL, 'pullupbar.png', 'Popular', 'fa-arrow-up'),
-(12, 'Resistance Bands Set', 'Equipment', NULL, 6200.00, 0, NULL, 'bands.png', '', 'fa-circle-nodes'),
-(13, 'Foam Roller', 'Equipment', NULL, 7500.00, 0, NULL, 'foamroller.png', '', 'fa-circle'),
-(14, 'Yoga Mat Pro', 'Accessories', NULL, 9200.00, 0, NULL, 'yogamat.png', '', 'fa-person'),
-(15, 'Gym Gloves', 'Accessories', NULL, 4900.00, 0, NULL, 'gloves.png', '', 'fa-hand'),
-(16, 'Shaker Bottle 700ml', 'Accessories', NULL, 3200.00, 0, NULL, 'shaker.png', '', 'fa-bottle-water'),
-(17, 'Gym Bag 35L', 'Accessories', NULL, 8800.00, 0, NULL, 'gymbag.png', 'New', 'fa-bag-shopping'),
-(18, 'Knee Sleeves (Pair)', 'Accessories', NULL, 5600.00, 0, NULL, 'kneesleeves.png', '', 'fa-person-running'),
-(19, 'Lifting Belt', 'Accessories', NULL, 7200.00, 0, NULL, 'liftingbelt.png', 'Popular', 'fa-circle-dot');
+(4, 'Whey Protein 2kg', 'Supplements', NULL, 16500.00, 50, NULL, 'whey.jpg', 'Best Seller', 'fa-jar'),
+(5, 'Creatine Monohydrate', 'Supplements', NULL, 8200.00, 49, NULL, 'creatine.png', 'Popular', 'fa-flask'),
+(6, 'Pre-Workout Powder', 'Supplements', NULL, 11400.00, 50, NULL, 'preworkout.png', 'New', 'fa-bolt'),
+(7, 'BCAA Capsules 60s', 'Supplements', NULL, 6500.00, 50, NULL, 'bcaa.jpg', '', 'fa-capsules'),
+(8, 'Mass Gainer 3kg', 'Supplements', NULL, 18000.00, 50, NULL, 'massgainer.png', 'New', 'fa-weight-scale'),
+(9, 'Vitamin C 1000mg', 'Supplements', NULL, 2900.00, 50, NULL, 'vitaminc.png', '', 'fa-tablets'),
+(10, 'Adjustable Dumbbells', 'Equipment', NULL, 42500.00, 50, NULL, 'dumbbells.png', 'Top Pick', 'fa-dumbbell'),
+(11, 'Pull-Up Bar', 'Equipment', NULL, 13000.00, -1, NULL, 'pullupbar.png', 'Popular', 'fa-arrow-up'),
+(12, 'Resistance Bands Set', 'Equipment', NULL, 6200.00, 50, NULL, 'bands.png', '', 'fa-circle-nodes'),
+(13, 'Foam Roller', 'Equipment', NULL, 7500.00, 50, NULL, 'foamroller.png', '', 'fa-circle'),
+(14, 'Yoga Mat Pro', 'Accessories', NULL, 9200.00, 50, NULL, 'yogamat.png', '', 'fa-person'),
+(15, 'Gym Gloves', 'Accessories', NULL, 4900.00, 50, NULL, 'gloves.png', '', 'fa-hand'),
+(16, 'Shaker Bottle 700ml', 'Accessories', NULL, 3200.00, 50, NULL, 'shaker.png', '', 'fa-bottle-water'),
+(17, 'Gym Bag 35L', 'Accessories', NULL, 8800.00, 50, NULL, 'gymbag.png', 'New', 'fa-bag-shopping'),
+(18, 'Knee Sleeves (Pair)', 'Accessories', NULL, 5600.00, 50, NULL, 'kneesleeves.png', '', 'fa-person-running'),
+(19, 'Lifting Belt', 'Accessories', NULL, 7200.00, 50, NULL, 'liftingbelt.png', 'Popular', 'fa-circle-dot');
 
 -- --------------------------------------------------------
 
@@ -200,7 +221,10 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`) VALUES
 (1, 'Admin', 'admin@gymstore.com', '$2y$10$HsFVaZgHXlg8sglEhqTfvu2okt4At.WD80PjyCzunUisqP7cThS1S', 'admin'),
-(2, 'Navindi Thisara', 'navindithisara214@gmail.com', '$2y$10$1140axZ.Xgm2ojgN5svqZ.dZajFJwUHt0MBFLXtJzNRitbacp10LC', 'user');
+(2, 'Navindi Thisara', 'navindithisara214@gmail.com', '$2y$10$1140axZ.Xgm2ojgN5svqZ.dZajFJwUHt0MBFLXtJzNRitbacp10LC', 'user'),
+(3, 'Dinesh Kumar', 'dineshkumar63@gmail.com', '$2y$10$HLHuPCiVuNv9w/uL/rgHuOIgCPnTlHzTJUklCpAXil28lZxN4X15m', 'user'),
+(4, 'Anusha Lakmali', 'anushalakmali721@gmail.com', '$2y$10$DgyNQpw/Lkg681BZTLyS9eKGi3wDN5v7ibw2ZBVMNB4aVUJhrHLCm', 'user'),
+(5, 'Samir Shakya', 'samirshakya1312@gmail.com', '$2y$10$LePskBE79aTMQ.3AMnxNUedKPvK0nUHfi3fUfy23gQEwxF/.MMfJ6', 'user');
 
 --
 -- Indexes for dumped tables
@@ -274,13 +298,13 @@ ALTER TABLE `contact_messages`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `password_resets`
@@ -298,7 +322,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables
